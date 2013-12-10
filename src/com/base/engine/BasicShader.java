@@ -1,0 +1,34 @@
+package com.base.engine;
+
+public class BasicShader extends Shader
+{
+	private static final BasicShader instance = new BasicShader();
+	
+	public static BasicShader getInstance()
+	{
+		return instance;
+	}
+	
+	private BasicShader()
+	{
+		super();
+		
+		addVertexShaderFromFile("basicVertex.vs");
+		addFragmentShaderFromFile("basicFragment.fs");
+		compileShader();
+		
+		addUniform("transform");
+		addUniform("color");
+	}
+	
+	public void updateUniforms(Matrix4f worldMatrix, Matrix4f projectedMatrix, Material material)
+	{
+		if(material.getDiffuseTexture() != null)
+			material.getDiffuseTexture().bind();
+		else
+			Texture.unbind();
+		
+		setUniform("transform", projectedMatrix);
+		setUniform("color", material.getColor());
+	}
+}
