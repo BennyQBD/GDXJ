@@ -19,6 +19,11 @@ public class BasicShader extends Shader
 		
 		addUniform("transform");
 		addUniform("color");
+		
+		String shaderText = Shader.loadShader("basicShader.glsl");
+		
+		Engine.getRenderer().createVertexShader(shaderText);
+		Engine.getRenderer().createFragmentShader(shaderText);
 	}
 	
 	public void updateUniforms(Matrix4f worldMatrix, Matrix4f projectedMatrix, Material material)

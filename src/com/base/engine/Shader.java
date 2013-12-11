@@ -125,7 +125,7 @@ public class Shader
 		glAttachShader(program, shader);
 	}
 	
-	private static String loadShader(String fileName)
+	public static String loadShader(String fileName)
 	{
 		StringBuilder shaderSource = new StringBuilder();
 		BufferedReader shaderReader = null;

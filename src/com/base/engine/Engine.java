@@ -12,6 +12,13 @@ public class Engine
 	private static RenderingEngine renderingEngine;
 	private static Renderer renderer;
 	
+	public static Game getGame(){return game;}
+	public static RenderingEngine getRenderingEngine(){return renderingEngine;}
+	public static Renderer getRenderer() {return renderer;}
+	
+	public static void setGame(Game game){Engine.game = game;}
+	public static void setRenderer(RenderingEngine renderer){Engine.renderingEngine = renderer;}
+	
 	public static void init(Game game, RenderingEngine renderingEngine, int width, int height, String title, boolean fullscreen)
 	{
 		renderer = new Renderer();
@@ -118,11 +125,4 @@ public class Engine
 	{
 		Window.dispose();
 	}
-	
-	public static Game getGame(){return game;}
-	public static RenderingEngine getRenderingEngine(){return renderingEngine;}
-	public static Renderer getRenderer() {return renderer;}
-	
-	public static void setGame(Game game){Engine.game = game;}
-	public static void setRenderer(RenderingEngine renderer){Engine.renderingEngine = renderer;}
 }

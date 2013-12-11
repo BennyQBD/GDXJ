@@ -163,8 +163,20 @@ public class RenderingEngine
 	{
 		Transform.calcView();
 		objects = Engine.getGame().getObjects();
-		shadowPass();
-		renderPass();
+		//shadowPass();
+		//renderPass();
+		
+		for(GameObject object : objects)
+		{
+
+			//TODO: Better way to render with different shaders than the game object has
+			Mesh tempMesh = object.getMesh().getMesh();
+			Transform tempTransform = object.getTransform();
+			
+			BasicShader.getInstance().bind();
+			BasicShader.getInstance().updateUniforms(tempTransform.calcModel(), tempTransform.getMVP(), object.getMesh().getMaterial());
+			tempMesh.draw();
+		}
 	}
 	
 	private void shadowPass()

@@ -2,6 +2,8 @@ package com.base.engine;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -133,13 +135,208 @@ public class Renderer
 	{
 		glDeleteBuffers(buffer);
 	}
-        
-//    public int createVertexShader(String text)
-//	{
-//		
-//	}
-//	
-//    public int CreateFragmentShader(const std::string& text);
+	
+	private int String_Find(String string, String key)
+	{
+		return String_Find(string, key, 0);
+	}
+	
+	private int String_Find(String string, String key, int start)
+	{
+		for(int i = start; i < string.length(); i++)
+		{
+			if(string.charAt(i) == key.charAt(0))
+			{
+				String test = string.substring(i, i + key.length());
+				
+				if(test.equals(key))
+					return i;
+			}
+		}
+		
+		return -1;
+	}
+	
+	private String getSpecifiedVersion(String shaderText)
+	{
+		final String VERSION_KEY = "#version ";
+
+		int versionLocation = String_Find(shaderText, VERSION_KEY);
+		int versionNumberStart = versionLocation + VERSION_KEY.length();
+		int versionNumberEnd = String_Find(shaderText, "\n", versionNumberStart);
+		
+		return shaderText.substring(versionNumberStart, versionNumberEnd);     
+	}
+	
+	private int String_FindClosingBrace(String text, int initialBraceLocation)
+	{
+		int currentLocation = initialBraceLocation + 1;
+
+		while(currentLocation != -1)
+		{
+			int nextOpening = String_Find(text, "{", currentLocation);
+			int nextClosing = String_Find(text, "}", currentLocation);
+
+			if(nextClosing < nextOpening || nextOpening == -1)
+				return nextClosing;
+
+			currentLocation = nextClosing;
+		}
+
+//		Engine::GetDisplay()->Error("Error: Shader is missing a closing brace!");
+//		assert(0 == 0);
+
+		return -1;
+	}
+	
+	private String eraseShaderFunction(String text, String functionHeader)
+	{
+		int begin = String_Find(text, functionHeader);
+
+		if(begin == -1)
+			return text;
+
+		int end = String_FindClosingBrace(text, String_Find(text, "{", begin));
+
+		String firstHalf = text.substring(0, begin);
+		String secondHalf = text.substring(end + 1);
+		
+		return firstHalf.concat(secondHalf);
+	}
+	
+	private String String_InsertCounter(String string)
+	{
+		final String KEY = "%d";
+		
+		int location = String_Find(string, KEY);
+		int num = 0;
+		
+		while(location != -1)
+		{
+			String firstHalf = string.substring(0, location);
+			String secondHalf = string.substring(location + KEY.length());
+			
+			string = firstHalf + num + secondHalf;
+			num++;
+			location = String_Find(string, KEY, location);
+		}
+		
+		return string;
+	}
+	
+	private String String_ReplaceLines(String text, String name)
+	{
+		int start = String_Find(text, name);
+		
+		while(start != -1)
+		{
+			int end = String_Find(text, "\n", start);
+			
+			String firstHalf = text.substring(0, start);
+			String secondHalf = text.substring(end);
+			
+			text = firstHalf + secondHalf;
+			
+			start = String_Find(text, name, start);
+		}
+		
+		return text;
+	}
+	
+	private static void checkShaderError(int shader, int flag, boolean isProgram, String errorMessage)
+	{
+		int success = 0;
+		String error;
+
+		if(isProgram)
+			success = glGetProgrami(shader, flag);
+		else
+			success = glGetShaderi(shader, flag);
+
+		if(success == 0)
+		{
+			if(isProgram)
+				error = glGetProgramInfoLog(shader, 1024);
+			else
+				error = glGetShaderInfoLog(shader, 1024);
+
+			System.err.println(errorMessage + ": '" + error + "'");
+			System.exit(1);
+		}
+	}
+	
+	private int createShader(String text, int type)
+	{
+		int shader = glCreateShader(type);
+		
+		if(shader == 0)
+		{
+			System.err.println("Shader creation failed: Could not find valid memory location when adding shader");
+			System.exit(1);
+		}
+		
+		glShaderSource(shader, text);
+		glCompileShader(shader);
+		
+		if(glGetShader(shader, GL_COMPILE_STATUS) == 0)
+		{
+			System.err.println(glGetShaderInfoLog(shader, 1024));
+			System.exit(1);
+		}
+
+		checkShaderError(shader, GL_COMPILE_STATUS, false, "Error compiling shader type " + type);
+
+		return shader;
+	}
+	
+    public int createVertexShader(String text)
+	{
+		String version = getSpecifiedVersion(text);
+		String vertexShaderText = text.replace("void VSmain()", "void main()");
+
+		vertexShaderText = eraseShaderFunction(vertexShaderText, "void FSmain()");
+		
+		if(version.equals("330"))
+		{
+			vertexShaderText = vertexShaderText.replaceAll("attribute", "layout(location = %d) in");
+			vertexShaderText = String_InsertCounter(vertexShaderText);
+			vertexShaderText = vertexShaderText.replaceAll("varying", "out");
+		}
+
+		System.out.println(vertexShaderText);
+		
+		return 0; //TODO: Return actual shader
+		//return createShader(vertexShaderText, GL_VERTEX_SHADER);
+	}
+	
+	public int createFragmentShader(String text)
+	{
+		String version = getSpecifiedVersion(text);
+		String fragmentShaderText = text.replace("void FSmain()", "void main()");
+
+		fragmentShaderText = eraseShaderFunction(fragmentShaderText, "void VSmain()");
+
+		fragmentShaderText = String_ReplaceLines(fragmentShaderText, "attribute");
+
+		if(version.equals("330"))
+        {
+			fragmentShaderText = fragmentShaderText.replace("varying", "in");
+			fragmentShaderText = fragmentShaderText.replace("gl_FragColor", "OUT_Fragment_Color");
+
+			String newFragout = "out vec4 OUT_Fragment_Color;\n";
+			int start = String_Find(fragmentShaderText, "\n");
+			
+			String firstHalf = fragmentShaderText.substring(0, start + 1);
+			String secondHalf = fragmentShaderText.substring(start + 1);
+			
+			fragmentShaderText = firstHalf + newFragout + secondHalf;
+        }
+
+		System.out.println(fragmentShaderText);
+		
+		return 0; //TODO: Return actual shader
+		//return createShader(fragmentShaderText, GL_FRAGMENT_SHADER);
+	}
 //    public int CreateShaderProgram(unsigned int* shaders, int numShaders);
 //    public std::vector<UniformData> CreateShaderUniforms(const std::string& shaderText, unsigned int shaderProgram);
 //    public void ValidateShaderProgram(unsigned int program);
