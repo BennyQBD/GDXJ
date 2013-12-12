@@ -6,6 +6,21 @@ public class Time
 	
 	private static double delta;
 	
+	private static double lastTime;
+	private static double startTime;
+	
+	public static void init()
+	{
+		lastTime = Time.getTime();
+		startTime = lastTime;
+	}
+	
+	public static void tick()
+	{
+		lastTime = startTime;
+		startTime = Time.getTime();
+	}
+	
 	public static double getTime()
 	{
 		return ((double)System.nanoTime() / (double)Time.SECOND);
@@ -13,16 +28,6 @@ public class Time
 	
 	public static double getDelta()
 	{
-		return delta;
-	}
-	
-	public static float getDeltaf()
-	{
-		return (float)delta;
-	}
-	
-	public static void setDelta(double delta)
-	{
-		Time.delta = delta;
+		return startTime - lastTime;
 	}
 }

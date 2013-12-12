@@ -4,6 +4,7 @@ import com.base.engine.*;
 
 public class ChaseComponent extends Component
 {	
+	@Override
 	public void input()
 	{
 		final float angle = 10f;
@@ -32,6 +33,7 @@ public class ChaseComponent extends Component
 			light.setDirection(light.getDirection().rotate(-angle, Vector3f.FORWARD));
 	}
 	
+	@Override
 	public void update()
 	{
 //		DirectionalLight light = Engine.getRenderer().getDirectionalLight();
@@ -41,7 +43,7 @@ public class ChaseComponent extends Component
 //		Vector3f directionToCamera = Transform.getCamera().getPosition().sub(transform.getPosition()).normalized();
 //		
 //		if(directionToCamera.lengthSquared() > 0)
-//			transform.move(directionToCamera.mul(Time.getDeltaf()));
+//			transform.move(directionToCamera.mul((float)this.getUpdateDelta()));
 //		
 //		transform.lookAt(Transform.getCamera().getPosition());
 		

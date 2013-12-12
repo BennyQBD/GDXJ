@@ -1,5 +1,8 @@
 package com.base.engine;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Engine 
 {
 	public static final int WIDTH = 800;
@@ -53,72 +56,97 @@ public class Engine
 		int frames = 0;
 		double frameCounter = 0;
 		
-		final double frameTime = 1.0 / FRAME_CAP;
+		//final double frameTime = 1.0 / FRAME_CAP;
 		
-		double lastTime = Time.getTime();
-		double unprocessedTime = 0;
+		//double lastTime = Time.getTime();
+		//double unprocessedTime = 0;
+		
+		Time.init();
 		
 		while(isRunning)
 		{
-			boolean render = false;
+			frameCounter += Time.getDelta();
 			
-			double startTime = Time.getTime();
-			double passedTime = startTime - lastTime;
-			lastTime = startTime;
+			if(Window.isCloseRequested())
+				stop();
+				
+			Window.update();
+			game.input();
+			Input.update();
+				
+			game.update();
+				
+			if(frameCounter >= 1.0)
+			{
+				System.out.println(frames + ": " + 1000.0f/frames + "ms");
+				frames = 0;
+				frameCounter = 0;
+			}
 			
-			unprocessedTime += passedTime;
-			frameCounter += passedTime;
+			renderingEngine.clearScreen();
+			game.render();
+			Window.render();
+			frames++;
 			
-			while(unprocessedTime > frameTime)
-			{
-				render = true;
-				
-				unprocessedTime -= frameTime;
-				
-				if(Window.isCloseRequested())
-					stop();
-				
-				Time.setDelta(frameTime);
-				
-				Window.update();
-				game.input();
-				Input.update();
-				
-				game.update();
-				
-				if(frameCounter >= 1.0)
-				{
-					System.out.println(frames + ": " + 1000.0f/frames + "ms");
-					frames = 0;
-					frameCounter = 0;
-				}
-			}
-			if(render)
-			{
-				render();
-				frames++;
-			}
-			else
-			{
-				try 
-				{
-					Thread.sleep(1);
-				} 
-				catch (InterruptedException e) 
-				{
-					e.printStackTrace();
-				}
-			}
+			Time.tick();
 		}
 		
 		cleanUp();
 	}
 	
-	private static void render()
+	private static void oldRunMethod()
 	{
-		renderingEngine.clearScreen();
-		game.render();
-		Window.render();
+//			boolean render = false;
+//			
+//			double startTime = Time.getTime();
+//			double passedTime = startTime - lastTime;
+//			lastTime = startTime;
+//			
+//			unprocessedTime += passedTime;
+//			frameCounter += passedTime;
+//			
+//			while(unprocessedTime > frameTime)
+//			{
+//				render = true;
+//				
+//				unprocessedTime -= frameTime;
+//				
+//				if(Window.isCloseRequested())
+//					stop();
+//				
+//				Time.setDelta(frameTime);
+//				
+//				Window.update();
+//				game.input();
+//				Input.update();
+//				
+//				game.update();
+//				
+//				if(frameCounter >= 1.0)
+//				{
+//					System.out.println(frames + ": " + 1000.0f/frames + "ms");
+//					frames = 0;
+//					frameCounter = 0;
+//				}
+//			}
+//			if(render)
+//			{
+//				renderingEngine.clearScreen();
+//				game.render();
+//				Window.render();
+//				frames++;
+//			}
+//			else
+//			{
+//				try 
+//				{
+//					Thread.sleep(1);
+//				} 
+//				catch (InterruptedException e) 
+//				{
+//					e.printStackTrace();
+//				}
+//			}
 	}
 	
 	private static void cleanUp()

@@ -2,8 +2,6 @@ package com.base.engine;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -245,7 +243,7 @@ public class Renderer
 	
 	private static void checkShaderError(int shader, int flag, boolean isProgram, String errorMessage)
 	{
-		int success = 0;
+		int success;
 		String error;
 
 		if(isProgram)

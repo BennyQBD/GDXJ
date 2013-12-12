@@ -36,7 +36,16 @@ public class GameObject
 	public void update()
 	{
 		for(Component component : components)
-			component.update();
+		{
+			component.addUnprocessedTime(Time.getDelta());
+			final double updateTime = component.getUpdateDelta();
+			
+			while(component.getUnprocessedTime() > updateTime)
+			{
+				component.update();
+				component.addUnprocessedTime(-updateTime);
+			}
+		}
 	}
 	
 	public void render()
