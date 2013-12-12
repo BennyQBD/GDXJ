@@ -173,8 +173,11 @@ public class RenderingEngine
 			Mesh tempMesh = object.getMesh().getMesh();
 			Transform tempTransform = object.getTransform();
 			
-			BasicShader.getInstance().bind();
-			BasicShader.getInstance().updateUniforms(tempTransform.calcModel(), tempTransform.getMVP(), object.getMesh().getMaterial());
+			//BasicShader.getInstance().bind();
+			//BasicShader.getInstance().updateUniforms(tempTransform.calcModel(), tempTransform.getMVP(), object.getMesh().getMaterial());
+			NewShader.get("basicShader").bind();
+			NewShader.get("basicShader").update(tempTransform, object.getMesh().getMaterial());
+			
 			tempMesh.draw();
 		}
 	}

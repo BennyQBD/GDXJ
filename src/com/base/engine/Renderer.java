@@ -301,10 +301,9 @@ public class Renderer
 			vertexShaderText = vertexShaderText.replaceAll("varying", "out");
 		}
 
-		System.out.println(vertexShaderText);
+		//System.out.println(vertexShaderText);
 		
-		return 0; //TODO: Return actual shader
-		//return createShader(vertexShaderText, GL_VERTEX_SHADER);
+		return createShader(vertexShaderText, GL_VERTEX_SHADER);
 	}
 	
 	public int createFragmentShader(String text)
@@ -330,16 +329,51 @@ public class Renderer
 			fragmentShaderText = firstHalf + newFragout + secondHalf;
         }
 
-		System.out.println(fragmentShaderText);
+		//System.out.println(fragmentShaderText);
 		
-		return 0; //TODO: Return actual shader
-		//return createShader(fragmentShaderText, GL_FRAGMENT_SHADER);
+		return createShader(fragmentShaderText, GL_FRAGMENT_SHADER);
 	}
-//    public int CreateShaderProgram(unsigned int* shaders, int numShaders);
-//    public std::vector<UniformData> CreateShaderUniforms(const std::string& shaderText, unsigned int shaderProgram);
-//    public void ValidateShaderProgram(unsigned int program);
-//    public void BindShaderProgram(unsigned int program);
-//    public void DeleteShaderProgram(unsigned int program, unsigned int* shaders, int numShaders);
+	
+    public int createShaderProgram(int[] shaders)
+	{
+		int program = glCreateProgram();
+		
+		for(int i = 0; i < shaders.length; i++)
+			glAttachShader(program, shaders[i]);
+		
+		glLinkProgram(program);
+		checkShaderError(program, GL_LINK_STATUS, true, "Error linking shader program");
+		
+		return program;
+	}
+//    public std::vector<UniformData> createShaderUniforms(const std::string& shaderText, unsigned int shaderProgram);
+    public void validateShaderProgram(int program)
+	{
+		glValidateProgram(program);
+		checkShaderError(program, GL_VALIDATE_STATUS, true, "Invalid shader program");
+	}
+	
+	private static int lastProgram = 0;
+	
+    public void bindShaderProgram(int program)
+	{
+		if(lastProgram != program)
+		{
+			glUseProgram(program);
+			lastProgram = program;
+		}
+	}
+	
+    public void deleteShaderProgram(int program, int[] shaders)
+	{
+		for(int i = 0; i < shaders.length; i++)
+		{
+			glDetachShader(program,shaders[i]);
+			glDeleteShader(shaders[i]);
+		}
+
+		glDeleteProgram(program);
+	}	
 //    
 //    public void SetUniformInt(unsigned int uniformLocation, int value);
 //    public void SetUniformFloat(unsigned int uniformLocation, float value);

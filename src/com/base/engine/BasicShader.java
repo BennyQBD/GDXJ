@@ -26,6 +26,7 @@ public class BasicShader extends Shader
 		Engine.getRenderer().createFragmentShader(shaderText);
 	}
 	
+	@Override
 	public void updateUniforms(Matrix4f worldMatrix, Matrix4f projectedMatrix, Material material)
 	{
 		if(material.getDiffuseTexture() != null)
