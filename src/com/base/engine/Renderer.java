@@ -2,6 +2,7 @@ package com.base.engine;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayList;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
@@ -181,9 +182,8 @@ public class Renderer
 			currentLocation = nextClosing;
 		}
 
-//		Engine::GetDisplay()->Error("Error: Shader is missing a closing brace!");
-//		assert(0 == 0);
-
+		Debug.assertError(false, "Error: Shader is missing a closing brace!");
+		
 		return -1;
 	}
 	
@@ -267,20 +267,12 @@ public class Renderer
 	{
 		int shader = glCreateShader(type);
 		
-		if(shader == 0)
-		{
-			System.err.println("Shader creation failed: Could not find valid memory location when adding shader");
-			System.exit(1);
-		}
+		Debug.assertError(shader != 0, "Shader creation failed: Could not find valid memory location when adding shader");
 		
 		glShaderSource(shader, text);
 		glCompileShader(shader);
 		
-		if(glGetShader(shader, GL_COMPILE_STATUS) == 0)
-		{
-			System.err.println(glGetShaderInfoLog(shader, 1024));
-			System.exit(1);
-		}
+		Debug.assertError(glGetShaderi(shader, GL_COMPILE_STATUS) != 0, glGetShaderInfoLog(shader, 1024));
 
 		checkShaderError(shader, GL_COMPILE_STATUS, false, "Error compiling shader type " + type);
 
@@ -301,7 +293,7 @@ public class Renderer
 			vertexShaderText = vertexShaderText.replaceAll("varying", "out");
 		}
 
-		//System.out.println(vertexShaderText);
+		Debug.println(vertexShaderText);
 		
 		return createShader(vertexShaderText, GL_VERTEX_SHADER);
 	}
@@ -329,7 +321,7 @@ public class Renderer
 			fragmentShaderText = firstHalf + newFragout + secondHalf;
         }
 
-		//System.out.println(fragmentShaderText);
+		Debug.println(fragmentShaderText);
 		
 		return createShader(fragmentShaderText, GL_FRAGMENT_SHADER);
 	}
@@ -346,7 +338,79 @@ public class Renderer
 		
 		return program;
 	}
-//    public std::vector<UniformData> createShaderUniforms(const std::string& shaderText, unsigned int shaderProgram);
+	
+	//TODO: Structs should be an arraylist of uniformData
+	private void addUniform(String uniformName, String uniformType, int shaderProgram, ArrayList<UniformData> structs, ArrayList<UniformData> result)
+	{
+		boolean addThis = true;
+
+//		for(unsigned int i = 0; i < structs.size(); i++)
+//		{
+//				if(structs[i].name.compare(uniformType) == 0)
+//				{
+//						addThis = false;
+//						for(unsigned int j = 0; j < structs[i].memberNames.size(); j++)
+//						{
+//								AddUniform(uniformName + "." + structs[i].memberNames[j].name, structs[i].memberNames[j].type, shaderProgram, structs, result);
+//						}
+//				}
+//		}
+
+		if(!addThis)
+				return;
+
+		int location = glGetUniformLocation(shaderProgram, uniformName);
+
+		Debug.assertError(location != 0xFFFFFFFF, "Could not find uniform: " + uniformName + " " + uniformType);
+
+		result.add(new UniformData(location, uniformType, uniformName));
+	}
+	
+	//TODO: Add struct detection!
+    public UniformData[] createShaderUniforms(String shaderText, int shaderProgram)
+	{
+		final String UNIFORM_KEY = "uniform";
+    
+        //ArrayList<UniformStruct> structs = FindUniformStructs(shaderText);
+
+        ArrayList<UniformData> result = new ArrayList<>();
+
+		int uniformLocation = String_Find(shaderText, UNIFORM_KEY);
+		while(uniformLocation != -1)
+		{
+			boolean isCommented = false;
+//			int lastLineEnd = shaderText.rfind(";", uniformLocation);
+//
+//			if(lastLineEnd != std::string::npos)
+//			{
+//				String potentialCommentSection = shaderText.substring(lastLineEnd,uniformLocation);
+//				isCommented = potentialCommentSection.find("//") != std::string::npos;
+//			}
+
+			if(!isCommented)
+			{
+				int begin = uniformLocation + UNIFORM_KEY.length();
+				int end = String_Find(shaderText, ";", begin);
+
+				String uniformLine = shaderText.substring(begin + 1, end);
+
+				begin = String_Find(uniformLine, " ");
+				String uniformName = uniformLine.substring(begin + 1);
+				String uniformType = uniformLine.substring(0, begin);
+
+				Debug.println("Adding Uniform: " + uniformName + "," + uniformType);
+				//AddUniform(uniformName, uniformType, shaderProgram, structs, result);
+				addUniform(uniformName, uniformType, shaderProgram, null, result);
+			}
+			uniformLocation = String_Find(shaderText, UNIFORM_KEY, uniformLocation + UNIFORM_KEY.length());
+		}
+		
+		UniformData[] returnValue = new UniformData[result.size()];
+		result.toArray(returnValue);
+		
+        return returnValue;
+	}
+	
     public void validateShaderProgram(int program)
 	{
 		glValidateProgram(program);
@@ -374,11 +438,26 @@ public class Renderer
 
 		glDeleteProgram(program);
 	}	
-//    
-//    public void SetUniformInt(unsigned int uniformLocation, int value);
-//    public void SetUniformFloat(unsigned int uniformLocation, float value);
-//    public void SetUniformVector3f(unsigned int uniformLocation, const Vector3f& value);
-//    public void SetUniformMatrix4f(unsigned int uniformLocation, const Matrix4f& value);
+    
+    public void setUniformInt(int uniformLocation, int value)
+	{
+		glUniform1i(uniformLocation, value);
+	}
+	
+    public void setUniformFloat(int uniformLocation, float value)
+	{
+		glUniform1f(uniformLocation, value);
+	}
+	
+    public void setUniformVector3f(int uniformLocation, Vector3f value)
+	{
+		glUniform3f(uniformLocation, value.getX(), value.getY(), value.getZ());
+	}
+	
+    public void setUniformMatrix4f(int uniformLocation, Matrix4f value)
+	{
+		glUniformMatrix4(uniformLocation, true, Util.createFlippedBuffer(value));
+	}
 //    
 //    public int CreateTexture(int width, int height, unsigned char* data, bool linearFiltering = true, bool repeatTexture = true);
 //    public void BindTexture(unsigned int texture, int unit);

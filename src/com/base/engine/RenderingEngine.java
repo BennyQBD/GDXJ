@@ -34,6 +34,11 @@ public class RenderingEngine
 	private Transform transform;
 	private Camera camera;
 	
+	public boolean updateUniform(UniformData uniform, Transform transform, Material material)
+	{
+		return false;
+	}
+	
 	public void clearScreen()
 	{
 		//TODO: Stencil Buffer

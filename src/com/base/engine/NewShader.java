@@ -1,15 +1,13 @@
 package com.base.engine;
 
 import java.util.HashMap;
-import static org.lwjgl.opengl.GL20.glGetUniformLocation;
-import static org.lwjgl.opengl.GL20.glUniform3f;
-import static org.lwjgl.opengl.GL20.glUniformMatrix4;
 
 public class NewShader 
 {
 	private static final HashMap<String, NewShader> shaderPrograms = new HashMap<>();
 	
 	private final int[] shaders;
+	private final UniformData[] uniforms;
 	private final int program;
 	
 	public static NewShader get(String shaderName)
@@ -39,12 +37,7 @@ public class NewShader
 		shaders[1] = (Engine.getRenderer().createFragmentShader(shaderText));
 		
 		program = Engine.getRenderer().createShaderProgram(shaders);
-		
-		//TODO: Generic way of adding uniforms!
-		uniforms = new HashMap<>();
-		
-		addUniform("MVP");
-		//addUniform("color");
+		uniforms = Engine.getRenderer().createShaderUniforms(shaderText, program);
 	}
 	
 	public void bind()
@@ -59,42 +52,36 @@ public class NewShader
 	
 	public void update(Transform transform, Material material)
 	{
-		//TODO: Actual generic update method
-		
-		if(material.getDiffuseTexture() != null)
-			material.getDiffuseTexture().bind();
-		else
-			Texture.unbind();
-		
-		transform.calcModel();
-		setUniform("MVP", transform.getMVP());
-		//setUniform("color", material.getColor());
-	}
-	
-	//TODO: This code won't be needed in final uniform system!
-	private HashMap<String, Integer> uniforms;
-	
-	public void addUniform(String uniform)
-	{
-		int uniformLocation = glGetUniformLocation(program, uniform);
-		
-		if(uniformLocation == 0xFFFFFFFF)
+		for (UniformData uniform : uniforms) 
 		{
-			System.err.println("Error: Could not find uniform: " + uniform);
-			new Exception().printStackTrace();
-			System.exit(1);
+			if(uniform.getName().substring(0, 4).equals("GDX_"))
+			{
+				String name = uniform.getName().substring(4);
+				switch (name) 
+				{
+					case "MVP":
+						Engine.getRenderer().setUniformMatrix4f(uniform.getLocation(), transform.calcMVP());
+						break;
+					case "Transform":
+						Engine.getRenderer().setUniformMatrix4f(uniform.getLocation(), transform.calcModel());
+						break;
+				}
+			}
+			else if(!Engine.getRenderingEngine().updateUniform(uniform, transform, material)) 
+			{
+				switch (uniform.getType()) 
+				{
+					case "sampler2D":
+						material.getTexture(uniform.getName()).bind();
+						break;
+					case "vec3":
+						Engine.getRenderer().setUniformVector3f(uniform.getLocation(), material.getVector(uniform.getName()));
+						break;
+					case "float":
+						Engine.getRenderer().setUniformFloat(uniform.getLocation(), material.getParameter(uniform.getName()));
+						break;
+				}
+			}
 		}
-		
-		uniforms.put(uniform, uniformLocation);
-	}
-	
-	public void setUniform(String uniformName, Vector3f value)
-	{
-		glUniform3f(uniforms.get(uniformName), value.getX(), value.getY(), value.getZ());
-	}
-	
-	public void setUniform(String uniformName, Matrix4f value)
-	{
-		glUniformMatrix4(uniforms.get(uniformName), true, Util.createFlippedBuffer(value));
 	}
 }

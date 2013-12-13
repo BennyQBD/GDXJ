@@ -99,12 +99,18 @@ public class Material
 	
 	public Vector3f getVector(String name)
 	{
-		return vectorList.get(name);
+		if(vectorList.containsKey(name))
+			return vectorList.get(name);
+		else
+			return Vector3f.ZERO;
 	}
 	
 	public float getParameter(String name)
 	{
-		return parameterList.get(name);
+		if(parameterList.containsKey(name))
+			return parameterList.get(name);
+		else
+			return 0;
 	}
 	
 	public Texture getTexture(String name)
@@ -117,6 +123,7 @@ public class Material
 			return bumpMap;
 		else
 			return textureList.get(name);
+		//TODO: Make this return a default texture if name isn't found
 	}
 	
 	public Texture getBumpTexture()
