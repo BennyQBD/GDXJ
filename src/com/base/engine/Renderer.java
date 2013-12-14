@@ -329,9 +329,8 @@ public class Renderer
     public int createShaderProgram(int[] shaders)
 	{
 		int program = glCreateProgram();
-		
-		for(int i = 0; i < shaders.length; i++)
-			glAttachShader(program, shaders[i]);
+
+        for (int shader : shaders) glAttachShader(program, shader);
 		
 		glLinkProgram(program);
 		checkShaderError(program, GL_LINK_STATUS, true, "Error linking shader program");
@@ -357,7 +356,7 @@ public class Renderer
 //		}
 
 		if(!addThis)
-				return;
+			return;
 
 		int location = glGetUniformLocation(shaderProgram, uniformName);
 
@@ -373,7 +372,7 @@ public class Renderer
     
         //ArrayList<UniformStruct> structs = FindUniformStructs(shaderText);
 
-        ArrayList<UniformData> result = new ArrayList<>();
+        ArrayList<UniformData> result = new ArrayList<UniformData>();
 
 		int uniformLocation = String_Find(shaderText, UNIFORM_KEY);
 		while(uniformLocation != -1)
@@ -430,11 +429,11 @@ public class Renderer
 	
     public void deleteShaderProgram(int program, int[] shaders)
 	{
-		for(int i = 0; i < shaders.length; i++)
-		{
-			glDetachShader(program,shaders[i]);
-			glDeleteShader(shaders[i]);
-		}
+        for (int shader : shaders)
+        {
+            glDetachShader(program, shader);
+            glDeleteShader(shader);
+        }
 
 		glDeleteProgram(program);
 	}	
