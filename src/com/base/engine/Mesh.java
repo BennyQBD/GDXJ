@@ -2,7 +2,6 @@ package com.base.engine;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class Mesh
@@ -233,12 +232,13 @@ public class Mesh
 			System.exit(1);
 		}
 		
-		ArrayList<Vertex> vertices = new ArrayList<>();
-		ArrayList<Integer> indices = new ArrayList<>();
+		ArrayList<Vertex> vertices = new ArrayList<Vertex>();
+		ArrayList<Integer> indices = new ArrayList<Integer>();
 		
 		try
 		{
-			try (BufferedReader meshReader = new BufferedReader(new FileReader("./res/models/" + fileName))) 
+            BufferedReader meshReader = new BufferedReader(new FileReader("./res/models/" + fileName));
+            try
 			{
 				String line;
 				
@@ -250,14 +250,14 @@ public class Mesh
 					if(tokens.length == 0 || tokens[0].equals("#"))
 						continue;
 					
-					switch (tokens[0]) 
-					{
-						case "v":
+					if(tokens[0].equals("v"))
+                    {
 							vertices.add(new Vertex(new Vector3f(Float.valueOf(tokens[1]),
 									Float.valueOf(tokens[2]),
 									Float.valueOf(tokens[3]))));
-							break;
-						case "f":
+                    }
+                    else if(tokens[0].equals("f"))
+                    {
 							indices.add(Integer.parseInt(tokens[1].split("/")[0]) - 1);
 							indices.add(Integer.parseInt(tokens[2].split("/")[0]) - 1);
 							indices.add(Integer.parseInt(tokens[3].split("/")[0]) - 1);
@@ -266,10 +266,14 @@ public class Mesh
 								indices.add(Integer.parseInt(tokens[1].split("/")[0]) - 1);
 								indices.add(Integer.parseInt(tokens[3].split("/")[0]) - 1);
 								indices.add(Integer.parseInt(tokens[4].split("/")[0]) - 1);
-							}	break;
-					}
+							}
+                    }
 				}
 			}
+            finally
+            {
+                meshReader.close();
+            }
 			
 			Vertex[] vertexData = new Vertex[vertices.size()];
 			vertices.toArray(vertexData);
@@ -279,7 +283,7 @@ public class Mesh
 			
 			addVertices(vertexData, Util.toIntArray(indexData), true, true);
 		}
-		catch(IOException | NumberFormatException e)
+		catch(Exception e)
 		{
 			e.printStackTrace();
 			System.exit(1);
