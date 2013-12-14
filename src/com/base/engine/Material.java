@@ -22,7 +22,7 @@ public class Material
 	
 	public static void generateDefaultMaterials()
 	{
-		defaultMaterial = new Material(new Texture("default.png"), new Vector3f(1,1,1), 1, 8);
+		defaultMaterial = new Material(Texture.get("default.png"), new Vector3f(1,1,1), 1, 8);
 		defaultMaterial.setNormalTexture(Texture.NORMAL_UP);
 		defaultMaterial.setBumpTexture(Texture.WHITE_PIXEL);
 		defaultMaterial.setHeightScale(0);

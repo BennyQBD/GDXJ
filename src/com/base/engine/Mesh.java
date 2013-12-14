@@ -3,24 +3,15 @@ package com.base.engine;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class Mesh
 {
-	private static Mesh rect;
-	private static Mesh plane;
-	private static Mesh cube;
-	
+    private static final HashMap<String, Mesh> meshes = new HashMap<String, Mesh>();
+
 	private int vbo;
 	private int ibo;
 	private int size;
-	
-	public Mesh(String fileName)
-	{
-		vbo = 0;
-		ibo = 0;
-		size = 0;
-		loadMesh(fileName);
-	}
 	
 	/**
 	 *
@@ -37,24 +28,25 @@ public class Mesh
 			Engine.getRenderer().deleteBuffer(ibo);
 	}
 	
-	public Mesh(Vertex[] vertices, int[] indices)
-	{
-		this(vertices, indices, false);
-	}
-	
-	public Mesh(Vertex[] vertices, int[] indices, boolean calcNormals)
-	{
-		this(vertices, indices, calcNormals, true);
-	}
-	
-	public Mesh(Vertex[] vertices, int[] indices, boolean calcNormals, boolean calcTangents)
+	private Mesh(Vertex[] vertices, int[] indices, boolean calcNormals, boolean calcTangents)
 	{
 		vbo = 0;
 		ibo = 0;
 		size = 0;
 		addVertices(vertices, indices, calcNormals, calcTangents);
 	}
-	
+
+    public static Mesh get(String name)
+    {
+        if(meshes.containsKey(name))
+            return meshes.get(name);
+        else
+        {
+            meshes.put(name, new Mesh(name));
+            return meshes.get(name);
+        }
+    }
+
 	public static void generatePrimitives()
 	{
 		generateRect();
@@ -72,7 +64,7 @@ public class Mesh
 		int[] indices = new int[] {	0,1,2,
 				   					0,2,3};
 		
-		rect = new Mesh(vertices, indices, true);
+		meshes.put("rect", new Mesh(vertices, indices, true, true));
 	}
 	
 	private static void generatePlane()
@@ -84,8 +76,8 @@ public class Mesh
 
 		int indices[] = new int[] {	0, 1, 2,
 									2, 1, 3};
-		
-		plane = new Mesh(vertices, indices, true);
+
+        meshes.put("plane", new Mesh(vertices, indices, true, true));
 	}
 	
 	private static void generateCube()
@@ -137,8 +129,8 @@ public class Mesh
 									
 									20,21,22,
 									20,22,23};
-		
-		cube = new Mesh(vertices, indices, true);
+
+        meshes.put("cube", new Mesh(vertices, indices, true, true));
 	}
 	
 	private void addVertices(Vertex[] vertices, int[] indices, boolean calcNormals, boolean calcTangents)
@@ -220,7 +212,7 @@ public class Mesh
 			vertex.setTangent(vertex.getTangent().normalized());
 	}
 	
-	private Mesh loadMesh(String fileName)
+	private Mesh(String fileName)
 	{
 		String[] splitArray = fileName.split("\\.");
 		String ext = splitArray[splitArray.length - 1];
@@ -288,11 +280,5 @@ public class Mesh
 			e.printStackTrace();
 			System.exit(1);
 		}
-		
-		return null;
 	}
-	
-	public static Mesh getRect(){return rect;}
-	public static Mesh getCube(){return cube;}
-	public static Mesh getPlane(){return plane;}
 }

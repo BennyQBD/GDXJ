@@ -1,9 +1,11 @@
 package com.base.engine;
 
+import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL15.*;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL32.*;
@@ -457,8 +459,57 @@ public class Renderer
 	{
 		glUniformMatrix4(uniformLocation, true, Util.createFlippedBuffer(value));
 	}
-//    
-//    public int CreateTexture(int width, int height, unsigned char* data, bool linearFiltering = true, bool repeatTexture = true);
-//    public void BindTexture(unsigned int texture, int unit);
-//    public void DeleteTexture(unsigned int texture);
+
+    public int createTexture(int width, int height, ByteBuffer data, boolean linearFiltering, boolean repeatTexture)
+    {
+        float filter;
+        int wrapMode;
+
+        if(linearFiltering)
+            filter = GL_LINEAR;
+        else
+            filter = GL_NEAREST;
+
+        if(repeatTexture)
+            wrapMode = GL_REPEAT;
+        else
+            wrapMode = GL_NEAREST;
+
+        int texture = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, texture);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filter);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+
+        return texture;
+    }
+
+    private static int lastTexture = 0;
+    private static int lastUnit = 0;
+
+    public void bindTexture(int texture, int unit)
+    {
+        if(lastTexture != texture)
+        {
+            if(unit != lastUnit)
+            {
+                //TODO: This may fail if GL_TEXTUREX is not ordered sequentially!
+                assert(unit >= 0 && unit <= 31);
+                glActiveTexture(GL_TEXTURE0 + unit);
+                lastUnit = unit;
+            }
+
+            glBindTexture(GL_TEXTURE_2D, texture);
+            lastTexture = texture;
+        }
+    }
+
+    public void deleteTexture(int texture)
+    {
+        glDeleteTextures(texture);
+    }
 }

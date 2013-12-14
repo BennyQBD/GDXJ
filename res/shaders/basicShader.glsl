@@ -3,18 +3,18 @@
 attribute vec3 position;
 attribute vec2 texCoord;
 
-varying vec2 FS_TexCoord;
+varying vec2 fs_TexCoord;
 
-uniform mat4 GDX_MVP;
+uniform mat4 X_MVP;
 uniform sampler2D diffuse;
 
 void VSmain()
 {
-	gl_Position = GDX_MVP * vec4(position, 1.0);
-	FS_TexCoord = texCoord;
+	gl_Position = X_MVP * vec4(position, 1.0);
+	fs_TexCoord = texCoord;
 }
 
 void FSmain()
 {
-	gl_FragColor = texture2D(diffuse, FS_TexCoord.xy);
+	gl_FragColor = texture2D(diffuse, fs_TexCoord.xy);
 }

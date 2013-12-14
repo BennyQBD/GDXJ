@@ -83,34 +83,24 @@ public class PhongShader extends Shader
 	public void updateUniforms(Matrix4f worldMatrix, Matrix4f projectedMatrix, Material material)
 	{
 		RenderingEngine renderer = Engine.getRenderingEngine();
-		
-		Texture.setActiveUnit(Texture.SHADOW_TEXTURE_0);
-		renderer.getShadowMap(0).bind();
-		Texture.setActiveUnit(Texture.SHADOW_TEXTURE_1);
-		renderer.getShadowMap(1).bind();
-		Texture.setActiveUnit(Texture.SHADOW_TEXTURE_2);
-		renderer.getShadowMap(2).bind();
-		Texture.setActiveUnit(Texture.SHADOW_TEXTURE_3);
-		renderer.getShadowMap(3).bind();
-		
-		Texture.setActiveUnit(Texture.NORMAL_TEXTURE);
-		
+
+		renderer.getShadowMap(0).bind(Texture.SHADOW_TEXTURE_0);
+		renderer.getShadowMap(1).bind(Texture.SHADOW_TEXTURE_1);
+		renderer.getShadowMap(2).bind(Texture.SHADOW_TEXTURE_2);
+		renderer.getShadowMap(3).bind(Texture.SHADOW_TEXTURE_3);
+
 		if(material.getNormalTexture() != null)
-			material.getNormalTexture().bind();
+			material.getNormalTexture().bind(Texture.NORMAL_TEXTURE);
 		else
 			Texture.unbind();
-		
-		Texture.setActiveUnit(Texture.HEIGHT_TEXTURE);
-		
+
 		if(material.getBumpTexture() != null)
-			material.getBumpTexture().bind();
+			material.getBumpTexture().bind(Texture.HEIGHT_TEXTURE);
 		else
 			Texture.unbind();
-		
-		Texture.setActiveUnit(Texture.DIFFUSE_TEXTURE);
-		
+
 		if(material.getDiffuseTexture() != null)
-			material.getDiffuseTexture().bind();
+			material.getDiffuseTexture().bind(Texture.DIFFUSE_TEXTURE);
 		else
 			Texture.unbind();
 		

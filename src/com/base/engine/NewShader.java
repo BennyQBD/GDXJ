@@ -52,11 +52,15 @@ public class NewShader
 	
 	public void update(Transform transform, Material material)
 	{
+        final String prefix = "X_";
+        final int preLength = prefix.length();
+
 		for(UniformData uniform : uniforms)
         {
-			if(uniform.getName().length() > 4 && uniform.getName().substring(0, 4).equals("GDX_"))
+			if(uniform.getName().length() > preLength
+                && uniform.getName().substring(0, preLength).equals(prefix))
 			{
-				String name = uniform.getName().substring(4);
+				String name = uniform.getName().substring(preLength);
 				if(name.equals("MVP"))
 					Engine.getRenderer().setUniformMatrix4f(uniform.getLocation(), transform.calcMVP());
 				else if(name.equals("Transform"))
@@ -65,7 +69,7 @@ public class NewShader
 			else if(!Engine.getRenderingEngine().updateUniform(uniform, transform, material)) 
 			{
 				if(uniform.getType().equals("sampler2D"))
-					material.getTexture(uniform.getName()).bind();
+					material.getTexture(uniform.getName()).bind(0);//TODO: Read texture unit from Material!
 				else if(uniform.getType().equals("vec3"))
 					Engine.getRenderer().setUniformVector3f(uniform.getLocation(), material.getVector(uniform.getName()));
                 else if(uniform.getType().equals("float"))

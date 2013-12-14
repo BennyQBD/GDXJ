@@ -84,7 +84,7 @@ public class RenderingEngine
 		BasicShader.getInstance().bind();
 		BasicShader.getInstance().updateUniforms(transform.calcModel(), transform.getMVP(), material);
 		
-		Mesh.getRect().draw();
+		Mesh.get("rect").draw();
 		
 		glEnable(GL_DEPTH_TEST);
 		Transform.popCamera();
