@@ -10,6 +10,7 @@ import java.util.HashMap;
 
 public class Shader
 {
+	public static final String DIRECTORY = "shaders/";
 	private static Shader lastBind = null;
 	private int program;
 	private HashMap<String, Integer> uniforms;
@@ -132,7 +133,7 @@ public class Shader
 		
 		try
 		{
-			shaderReader = new BufferedReader(new FileReader("./res/shaders/" + fileName));
+			shaderReader = new BufferedReader(new FileReader(Engine.getResourcePath(DIRECTORY + fileName)));
 			String line;
 			
 			while((line = shaderReader.readLine()) != null)

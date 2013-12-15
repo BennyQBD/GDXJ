@@ -15,6 +15,8 @@ import javax.imageio.ImageIO;
 
 public class Texture
 {
+	public static final String DIRECTORY = "textures/";
+
     //TODO: Make texture constants dynamic (aka hashmap territory)
 	public static final Texture WHITE_PIXEL = new Texture(1, 1, (ByteBuffer)Util.createByteBuffer(4).put(new byte[]{(byte) 0xFF,(byte) 0xFF,(byte) 0xFF,(byte) 0xFF}).flip());
 	public static final Texture NORMAL_UP = new Texture(1, 1, (ByteBuffer)Util.createByteBuffer(4).put(new byte[]{(byte) 0x80,(byte) 0x7F,(byte) 0xFF,(byte) 0xFF}).flip()); 
@@ -95,7 +97,7 @@ public class Texture
 	{
 		try
 		{
-			BufferedImage image = ImageIO.read(new File("./res/textures/" + fileName));
+			BufferedImage image = ImageIO.read(new File(Engine.getResourcePath(DIRECTORY + fileName)));
 
 			boolean hasAlpha = image.getColorModel().hasAlpha();
 

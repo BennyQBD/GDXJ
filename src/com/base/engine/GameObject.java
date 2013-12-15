@@ -5,24 +5,24 @@ import java.util.ArrayList;
 public class GameObject
 {
 	private Transform transform;
+	private Mesh mesh;
+	private Material material;
+	private Shader shader;
 	private ArrayList<Component> components;
 	private boolean castShadows;
-	private RenderableMesh mesh;
+
+	public Transform getTransform(){return transform;}
+	public Material getMaterial() {return material;}
+	public Mesh getMesh() {return mesh;}
+	public boolean canCastShadows() {return castShadows;}
+	public void setCastShadows(boolean castShadows) {this.castShadows = castShadows;}
 	
-	public GameObject(Transform transform)
+	public GameObject(Mesh mesh, Material material)
 	{
-		this(transform, null);
-	}
-	
-	public GameObject(RenderableMesh mesh)
-	{
-		this(new Transform(), mesh);
-	}
-	
-	public GameObject(Transform transform, RenderableMesh mesh)
-	{
-		this.transform = transform;
+		this.transform = new Transform();
 		this.mesh = mesh;
+		this.material = material;
+		this.shader = null; //TODO: Start letting game object be based on the new shader system!
 		components = new ArrayList<Component>();
 		castShadows = true;
 	}
@@ -55,8 +55,9 @@ public class GameObject
 		
 		if(mesh != null)
 		{
-			//mesh.draw(transform.getTransformation(), transform.getProjectedTransformation());
-			mesh.draw(transform.calcModel(), transform.getMVP());
+			shader.bind();
+			shader.updateUniforms(transform.calcModel(), transform.calcMVP(), material);
+			mesh.draw();
 		}
 	}
 	
@@ -70,25 +71,5 @@ public class GameObject
 	public void removeComponent(Component component)
 	{
 		components.remove(component);
-	}
-	
-	public Transform getTransform()
-	{
-		return transform;
-	}
-	
-	public RenderableMesh getMesh()
-	{
-		return mesh;
-	}
-
-	public boolean isCastShadows()
-	{
-		return castShadows;
-	}
-
-	public void setCastShadows(boolean castShadows)
-	{
-		this.castShadows = castShadows;
 	}
 }

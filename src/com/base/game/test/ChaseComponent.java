@@ -1,4 +1,4 @@
-package com.base.game;
+package com.base.game.test;
 
 import com.base.engine.*;
 

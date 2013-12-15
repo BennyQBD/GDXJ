@@ -130,58 +130,22 @@ public class RenderingEngine
 			shadowCamera[i] = new Camera(new Vector3f(0,0,0), new Quaternion(directionalLight.getDirection()));
 		}
 		Texture.unbindRenderTarget();
-		//Generate Framebuffer
-//		framebuffer = glGenFramebuffers();
-//		glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-//		
-//		//Generate Depth texture
-//		depthTexture = new Texture(glGenTextures());
-//		glBindTexture(GL_TEXTURE_2D, depthTexture.getID());
-//		FloatBuffer data = Util.createFloatBuffer(SHADOW_WIDTH * SHADOW_HEIGHT);
-//		
-//		for(int i = 0; i < SHADOW_WIDTH * SHADOW_HEIGHT; i++)
-//			data.put(1);
-//		data.flip();
-//		
-//		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, SHADOW_WIDTH, SHADOW_HEIGHT, 0,GL_DEPTH_COMPONENT, GL_FLOAT, data);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-//		 
-//		//Initialize Framebuffer 
-//		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture.getID(), 0);
-//		 
-//		glDrawBuffer(GL_NONE);
-//		if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-//		{
-//			System.err.println("Shadow framebuffer creation has failed");
-//			new Exception().printStackTrace();
-//			System.exit(1);
-//		}
-//		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//		shadowCamera = new Camera(new Vector3f(0,0,0), new Quaternion(directionalLight.getDirection()));
 	}
 	
 	public void fullRender()
 	{
 		Transform.calcView();
 		objects = Engine.getGame().getObjects();
-		//shadowPass();
-		//renderPass();
 		
 		for(GameObject object : objects)
 		{
 
 			//TODO: Better way to render with different shaders than the game object has
-			Mesh tempMesh = object.getMesh().getMesh();
+			Mesh tempMesh = object.getMesh();
 			Transform tempTransform = object.getTransform();
-			
-			//BasicShader.getInstance().bind();
-			//BasicShader.getInstance().updateUniforms(tempTransform.calcModel(), tempTransform.getMVP(), object.getMesh().getMaterial());
+
 			NewShader.get("basicShader").bind();
-			NewShader.get("basicShader").update(tempTransform, object.getMesh().getMaterial());
+			NewShader.get("basicShader").update(tempTransform, object.getMaterial());
 			
 			tempMesh.draw();
 		}
@@ -206,11 +170,11 @@ public class RenderingEngine
 			
 			for(GameObject object : objects)
 			{
-				if(!object.isCastShadows())
+				if(!object.canCastShadows())
 					continue;
 				
 				//TODO: Better way to render with different shaders than the game object has
-				Mesh tempMesh = object.getMesh().getMesh();
+				Mesh tempMesh = object.getMesh();
 				Transform tempTransform = object.getTransform();
 				
 				ShadowMapShader.getInstance().updateUniforms(tempTransform.calcModel(), tempTransform.getMVP(), Material.getDefaultMaterial());
@@ -222,38 +186,6 @@ public class RenderingEngine
 			
 		}
 		Texture.unbindRenderTarget();
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//		Transform.pushProjection(new Matrix4f().initOrthographicProjection(-LIGHT_VIEW_SIZE,LIGHT_VIEW_SIZE,-LIGHT_VIEW_SIZE,LIGHT_VIEW_SIZE,-LIGHT_VIEW_SIZE,LIGHT_VIEW_SIZE));
-//		//shadowCamera = new Camera(new Vector3f(0,0,0), new Quaternion(directionalLight.getDirection()));
-//		
-//		Vector3f shadowCameraPosition = Transform.getCamera().getPosition().add(Transform.getCamera().getForward().mul(LIGHT_VIEW_SIZE));
-//		shadowCamera = new Camera(shadowCameraPosition, new Quaternion(directionalLight.getDirection()));
-//		Transform.pushCamera(shadowCamera);
-//		
-//		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, framebuffer);
-//		glClear(GL_DEPTH_BUFFER_BIT);
-//		//glCullFace(GL_FRONT);
-//		
-//		glViewport(0,0,SHADOW_WIDTH,SHADOW_HEIGHT);
-//		ShadowMapShader.getInstance().bind();
-//		
-//		for(GameObject object : objects)
-//		{
-//			if(!object.isCastShadows())
-//				continue;
-//			
-//			//TODO: Better way to render with different shaders than the game object has
-//			Mesh tempMesh = object.getMesh().getMesh();
-//			Transform tempTransform = object.getTransform();
-//			
-//			ShadowMapShader.getInstance().updateUniforms(tempTransform.calcModel(), tempTransform.getMVP(), Material.getDefaultMaterial());
-//			tempMesh.draw();
-//		}
-//		
-//		Transform.popCamera();
-//		Transform.popProjection();
-//		//glCullFace(GL_BACK);
-//		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	}
 	
 	private void renderPass()
@@ -264,19 +196,6 @@ public class RenderingEngine
 															{0.0f, 0.5f, 0.0f, 0.5f},
 															{0.0f, 0.0f, 0.5f, 0.5f},
 															{0.0f, 0.0f, 0.0f, 1.0f}});
-//		glColorMask(false, false, false, false);
-//		for(GameObject object : objects)
-//		{
-//			Mesh tempMesh = object.getMesh().getMesh();
-//			Transform tempTransform = object.getTransform();
-//			
-//			ShadowMapShader.getInstance().updateUniforms(tempTransform.calcModel(), tempTransform.getMVP(), Material.getDefaultMaterial());
-//			tempMesh.draw();
-//		}
-//		glDepthMask(false);
-//		glColorMask(true, true, true, true);
-//		glClear(GL_COLOR_BUFFER_BIT);
-//		glDepthFunc(GL_EQUAL);
 		for(GameObject object : objects)
 		{
 			for(int i = 0; i < 4; i++)
@@ -294,10 +213,6 @@ public class RenderingEngine
 			
 			object.render();
 		}
-//		glDepthFunc(GL_LESS);
-//		glDepthMask(true);
-//		Material depthMaterial = new Material(depthTexture);
-//		drawRect2D(50, 50, Window.getWidth()/8, Window.getHeight()/8, depthMaterial);
 	}
 	
 //	public void usePerspectiveMatrix()

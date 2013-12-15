@@ -1,12 +1,14 @@
 package com.base.engine;
 
-public class Engine 
+import java.io.File;
+import java.util.ArrayList;
+
+public class Engine
 {
-	public static final int WIDTH = 800;
-	public static final int HEIGHT = 600;
-	public static final String TITLE = "3D Engine";
-	public static final double FRAME_CAP = 5000.0;
-	
+	private static final String RESOURCE_DIRECTORY = "res/";
+	private static final String DEFAULT_RESOURCES = "default/";
+
+	private static ArrayList<String> directories = new ArrayList<String>();
 	private static boolean isRunning = false;
 	private static Game game;
 	private static RenderingEngine renderingEngine;
@@ -17,17 +19,35 @@ public class Engine
 	public static Renderer getRenderer() {return renderer;}
 	
 	public static void setGame(Game game){Engine.game = game;}
-	public static void setRenderer(RenderingEngine renderer){Engine.renderingEngine = renderer;}
+	public static void setRenderingEngine(RenderingEngine renderer){Engine.renderingEngine = renderer;}
 	
-	public static void init(Game game, RenderingEngine renderingEngine, int width, int height, String title, boolean fullscreen)
+	public static void init(int width, int height, String title, boolean fullscreen)
 	{
 		renderer = new Renderer();
-		
-		Engine.game = game;
-		Engine.renderingEngine = renderingEngine;
+		addResourceDirectory(DEFAULT_RESOURCES);
+
+		Engine.game = new Game();
+		Engine.renderingEngine = new RenderingEngine();
 		Window.createWindow(width, height, title);
 		renderingEngine.initGraphics();
 		renderingEngine.init();
+	}
+
+	public static void addResourceDirectory(String directoryName)
+	{
+		directories.add(directoryName);
+	}
+
+	public static String getResourcePath(String pathFromDirectory)
+	{
+		for(String path : directories)
+		{
+			String result = "./" + Engine.RESOURCE_DIRECTORY + path + pathFromDirectory;
+			if(new File(result).exists())
+				return result;
+		}
+
+		return null;
 	}
 	
 	public static void start()

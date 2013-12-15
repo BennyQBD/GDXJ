@@ -7,6 +7,7 @@ import java.util.HashMap;
 
 public class Mesh
 {
+	public static final String DIRECTORY = "models/";
     private static final HashMap<String, Mesh> meshes = new HashMap<String, Mesh>();
 
 	private int vbo;
@@ -229,7 +230,7 @@ public class Mesh
 		
 		try
 		{
-            BufferedReader meshReader = new BufferedReader(new FileReader("./res/models/" + fileName));
+            BufferedReader meshReader = new BufferedReader(new FileReader(Engine.getResourcePath(DIRECTORY + fileName)));
             try
 			{
 				String line;
